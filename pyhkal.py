@@ -171,7 +171,10 @@ class IRCBot(asynchat.async_chat):
         string = "NOTICE " + target + " :" + text
         print "(P<<N)", string
         self.spamqueue.add(self.sendraw,[string])
- 
+
+    def sendAction(self,target,text):
+        self.sendMsg(target,"%s %s%s" % ("\x01ACTION", text, "\x01"))
+
     def sendErr(self,target,inst):
         self.sendMsg(target,"err > " + str(type(inst)) + " " + str(inst.args))
  
@@ -278,4 +281,5 @@ def main(instance=None):
  
 if __name__ == '__main__':
     main()
-
+ 
+ 
