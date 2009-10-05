@@ -12,7 +12,7 @@ from utils import *
 class IRCBot(asynchat.async_chat):
     MODLIST = {}
     performqueue = []
-    def __init__(self, server="irc.quakenet.org", port=6667,ident="nexus", password="", nickname="FAiLHKAL" + str(randint(0,9999999)), mainchannel="#ich-sucke", createSocket=True):
+    def __init__(self, server="irc.quakenet.org", port=6667,ident="wtfh4x", password="lakx4h", nickname="h4xkal" + str(randint(0,9999999)), mainchannel="#h4xkal", createSocket=True):
         if createSocket:
             asynchat.async_chat.__init__(self)
         self.set_terminator("\n")
@@ -172,6 +172,9 @@ class IRCBot(asynchat.async_chat):
         print "(P<<N)", string
         self.spamqueue.add(self.sendraw,[string])
 
+    def sendAction(self,target,text):
+        self.sendMsg(target,"%s %s%s" % ("\x01ACTION", text, "\x01"))
+
     def sendErr(self,target,inst):
         self.sendMsg(target,"err > " + str(type(inst)) + " " + str(inst.args))
 
@@ -252,25 +255,25 @@ def main(instance=None):
         bot = IRCBot()
 
     from modules.admin import AdminMod
-    from modules.decide import DecideMod
-    from modules.cube import CubeMod
-    from modules.karma import KarmaMod
-    from modules.tikkle import TikkleMod
-    from modules.timer import TimerMod
+#    from modules.decide import DecideMod
+#    from modules.cube import CubeMod
+#    from modules.karma import KarmaMod
+#    from modules.tikkle import TikkleMod
+#    from modules.timer import TimerMod
     from modules.tools import ToolsMod
-    from modules.stfu import StfuMod
-    from modules.randquote import RandquoteMod
+#    from modules.stfu import StfuMod
+#    from modules.randquote import RandquoteMod
     from modules.factoid import FactoidMod
 
     bot.addModule(AdminMod)
-    bot.addModule(DecideMod)
-    bot.addModule(CubeMod)
-    bot.addModule(KarmaMod)
-    bot.addModule(TikkleMod)
-    bot.addModule(TimerMod)
+#    bot.addModule(DecideMod)
+#    bot.addModule(CubeMod)
+ #   bot.addModule(KarmaMod)
+  #  bot.addModule(TikkleMod)
+   # bot.addModule(TimerMod)
     bot.addModule(ToolsMod)
-    bot.addModule(StfuMod)
-    bot.addModule(RandquoteMod)
+   # bot.addModule(StfuMod)
+   # bot.addModule(RandquoteMod)
     bot.addModule(FactoidMod)
 
     asyncore.loop()

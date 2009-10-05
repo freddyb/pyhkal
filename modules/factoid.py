@@ -6,13 +6,13 @@ import re
 from modules import IRCBotMod
 from utils import list2string, file2obj, obj2file, nick
 from random import randint
-
+import textwrap
 ###
 
 class FactoidMod(IRCBotMod):
     regexpattern = r':(.+) PRIVMSG ([\S]+) :(.+)'
     filename = "factoid.dict"
-    factoidprobability = 100
+    factoidprobability = 100 # you definately want to change this
     def __init__(self,head):
         IRCBotMod.__init__(self,head)
         self.handleInput = self.handler
@@ -45,17 +45,48 @@ class FactoidMod(IRCBotMod):
                             cre = re.compile(regex)
                             
                             self.factoids.append( (cre, reaction ) )
-                            self.head.sendMsg(target,"Okay, "+ nick(host)+".")
+                            if (self.head.mainchannel.isOp(nick(host))):
+                                self.head.sendMsg(target,"Okay, "+ nick(host)+".")
+                            else:
+                                self.head.sendMsg(self.head.mainchannel.name, "Added [%s] %s »%s« via query" % (len(self.factoids), t[2], list2string(t[3:])) )
+
                         except:
                             self.head.sendMsg(target,"Invalid Regex, "+ nick(host)+" :<")
                             
                 elif (t[1] == "get"):
                     gets = [ "[%s] %s -> %s" % (i, cre.pattern, subst) for i, (cre, subst) in enumerate(self.factoids) if t[2] in cre.pattern ]
                     if len(gets):
-                        self.head.sendMsg(target, list2string(gets,', ') )
+                        answer = list2string(gets,', ')
+                        if (len(answer) > 300):
+                            answerlist = textwrap.wrap(answer,300)
+                            for ans in answerlist:
+                                self.head.sendMsg(target, ans)
+                        else:
+                            self.head.sendMsg(target, answer )
                     else:
                         self.head.sendMsg(target, "No match..")
 
+                elif (t[1] == "find"):
+
+                    gets = [ "[%s] %s -> %s" % (i, cre.pattern, subst) for i, (cre, subst) in enumerate(self.factoids) if t[2] in subst ]
+                    if len(gets):
+                        answer = list2string(gets,', ')
+                        if (len(answer) > 300):
+                            answerlist = textwrap.wrap(answer,300)
+                            for ans in answerlist:
+                                self.head.sendMsg(target, ans)
+                        else:
+                            self.head.sendMsg(target, answer )
+                    else:
+                        self.head.sendMsg(target, "No match..")
+
+                elif (t[1] == "num"):
+                    if (int(t[2]) <= len(self.factoids)):
+                        f = self.factoids[int(t[2])]
+                        gets = "[%s] %s -> %s" % (t[2], f[0].pattern, f[1])
+                        self.head.sendMsg(target, gets)
+                    else:
+                        self.head.sendMsg(target, "No match..")
 
                 elif (t[1] == "list"): # 400 max., so we should split here :<
 
@@ -73,11 +104,11 @@ class FactoidMod(IRCBotMod):
                 if m:
                     tmp = cre.sub(subst, m.group(0))
                     matches.append( tmp )
-                    print "----DEBUG"
-                    print "text: " + text
-                    print "subst: " + subst
-                    print "added match: " + tmp
-                    print "----DEBUG"
+                    #print "----DEBUG"
+                    #print "text: " + text
+                    #print "subst: " + subst
+                    #print "added match: " + tmp
+                    #print "----DEBUG"
     
 
             if (len(matches) > 0): # and (len(t[1:]) > 15) and (len(t) > 3):
