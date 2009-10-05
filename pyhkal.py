@@ -1,18 +1,18 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # File: pykhal.py
-
+ 
 import asyncore, asynchat
 import re, socket
 import sys
 from random import randint
 from threading import Timer
 from utils import *
-
+ 
 class IRCBot(asynchat.async_chat):
     MODLIST = {}
     performqueue = []
-    def __init__(self, server="irc.quakenet.org", port=6667,ident="wtfh4x", password="lakx4h", nickname="h4xkal" + str(randint(0,9999999)), mainchannel="#h4xkal", createSocket=True):
+    def __init__(self, server="irc.quakenet.org", port=6667,ident="nexus", password="", nickname="FAiLHKAL" + str(randint(0,9999999)), mainchannel="#ich-sucke", createSocket=True):
         if createSocket:
             asynchat.async_chat.__init__(self)
         self.set_terminator("\n")
@@ -32,18 +32,18 @@ class IRCBot(asynchat.async_chat):
         #provides self to mods on rehash, else MODLIST would be empty and xyzzy
         for x in self.MODLIST:
             self.MODLIST[x].head = self
-
+ 
         self.initcommands = [
             "USER " + self.ident + " " + self.ident + " " + self.ident + " :Python-TiHKAL",
             "PASS " + self.ident + ":" + self.password,
             "NICK " + self.nickname
             ]
-
+ 
         self.spamqueue = SpamQueue(5,5)
         if createSocket:
             self.create_socket(socket.AF_INET,socket.SOCK_STREAM)
             self.connect((self.server,self.port))
-
+ 
     def handle_connect(self):
         print "(INFO) Connected to ", self.server + ":" + str(self.port)
         Timer(5,self.runinitcommands,()).start()
@@ -54,10 +54,10 @@ class IRCBot(asynchat.async_chat):
     def handle_expt(self):
         print "(INFO) Connection to ", self.server + ":" + str(self.port), "failed."
         self.close()
-
+ 
     def collect_incoming_data(self, data):
         self.data = self.data + data
-
+ 
     def found_terminator(self):
         data = self.data
         if data.endswith("\r"):
@@ -93,7 +93,7 @@ class IRCBot(asynchat.async_chat):
             return
         if re.match(":(.+) PRIVMSG (.+) :(.+)", data):
             return
-
+ 
     def addModule(self, constructor,params=None):
         if (not params):
             module = constructor(self)
@@ -143,7 +143,7 @@ class IRCBot(asynchat.async_chat):
             self.prepareNicklist()
         if (channel == self.mainchannel.name):
             self.mainchannel.nicklist[nick(host)] = nick(host)
-
+ 
     def onRawNumeric(self,numeric,text):
         numeric = int(numeric)
         #adds every user in channel to the temporary nicklist-dict
@@ -158,26 +158,23 @@ class IRCBot(asynchat.async_chat):
             self.sendraw("join " + self.mainchannel.name)
             for x in self.performqueue:
                 self.sendraw(x)
-
+ 
     def onText(self, host,target,text):
         print "(P>>M)", "<" + host + "@" + target + ">", text
-
+ 
     def sendMsg(self,target,text):
         string = "PRIVMSG " + target + " :" + text
         print "(P<<M)", string
         self.spamqueue.add(self.sendraw,[string])
-
+ 
     def sendNotice(self,target,text):
         string = "NOTICE " + target + " :" + text
         print "(P<<N)", string
         self.spamqueue.add(self.sendraw,[string])
-
-    def sendAction(self,target,text):
-        self.sendMsg(target,"%s %s%s" % ("\x01ACTION", text, "\x01"))
-
+ 
     def sendErr(self,target,inst):
         self.sendMsg(target,"err > " + str(type(inst)) + " " + str(inst.args))
-
+ 
     def printErr(self,name,inst):
         print "err in", name + "> " + str(type(inst)) + " " + str(inst.args)
         
@@ -187,7 +184,7 @@ class IRCBot(asynchat.async_chat):
         exit()
     def prepareNicklist(self):
         self.newmainchannelnicklist = {}
-
+ 
 class Channel(object):
     def __init__(self,name):
         self.name = name
@@ -199,15 +196,15 @@ class Channel(object):
     def isVoice(self,nick):
         if (self.nicklist[nick][0] == '+'):
             return True
-        return False        
+        return False
     def isHalfOp(self,nick):
         if (self.nicklist[nick][0] == '%'):
             return True
-        return False        
+        return False
     def isReg(self,nick):
         if ((not self.isOp(nick)) and (not self.isHalfOp(nick)) and (not self.isVoice(nick))):
             return True
-        return False        
+        return False
     def setNicklistdict(self,nickdict):
         self.nicklist = nickdict
         
@@ -229,7 +226,7 @@ class SpamQueue(object):
         elif (not self.queue):
             Timer(self.time * 2,self.resetcounter,()).start()
             self.resetter = True
-
+ 
     def add(self,func,list):
         self.queue.append((func,list))
         if ((not self.counter) or (self.resetter)):
@@ -238,48 +235,47 @@ class SpamQueue(object):
             
     def do(self,tuple):
         tuple[0](*tuple[1])
-
+ 
     def resetcounter(self):
         self.resetter = False
         if (not self.queue):
             self.counter = 0
-
-
+ 
+ 
 def main(instance=None):
     global bot
-
+ 
     if instance:
         IRCBot.__init__(instance, instance.server,instance.port,instance.ident,instance.password,instance.nickname,instance.mainchannel, False)
         bot = instance
     else:
         bot = IRCBot()
-
+ 
     from modules.admin import AdminMod
-#    from modules.decide import DecideMod
-#    from modules.cube import CubeMod
-#    from modules.karma import KarmaMod
-#    from modules.tikkle import TikkleMod
-#    from modules.timer import TimerMod
+    from modules.decide import DecideMod
+    from modules.cube import CubeMod
+    from modules.karma import KarmaMod
+    from modules.tikkle import TikkleMod
+    from modules.timer import TimerMod
     from modules.tools import ToolsMod
-#    from modules.stfu import StfuMod
-#    from modules.randquote import RandquoteMod
-    from modules.factoid import FactoidMod
-
+    from modules.stfu import StfuMod
+    from modules.randquote import RandquoteMod
+ 
     bot.addModule(AdminMod)
-#    bot.addModule(DecideMod)
-#    bot.addModule(CubeMod)
- #   bot.addModule(KarmaMod)
-  #  bot.addModule(TikkleMod)
-   # bot.addModule(TimerMod)
+    bot.addModule(DecideMod)
+    bot.addModule(CubeMod)
+    bot.addModule(KarmaMod)
+    bot.addModule(TikkleMod)
+    bot.addModule(TimerMod)
     bot.addModule(ToolsMod)
-   # bot.addModule(StfuMod)
-   # bot.addModule(RandquoteMod)
-    bot.addModule(FactoidMod)
-
+    bot.addModule(StfuMod)
+    bot.addModule(RandquoteMod)
+ 
     asyncore.loop()
-
+ 
     print "reloading - asyncore dumped"
     main()
-
+ 
 if __name__ == '__main__':
     main()
+
