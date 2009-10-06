@@ -32,7 +32,7 @@ class FactoidMod(IRCBotMod):
         matches = [] # factoid-matching :s
         if (t[0] == "factoid"):
             if (len(t) > 2):
-                if (t[1] == "set"):
+                if ((t[1] == "set") and (t[1] == "add")):
                     try:
                         r = re.match(list2string(t[2]),"")
                     except Exception as inst:
@@ -48,7 +48,7 @@ class FactoidMod(IRCBotMod):
                             if (self.head.mainchannel.isOp(nick(host))):
                                 self.head.sendMsg(target,"Okay, "+ nick(host)+".")
                             else:
-                                self.head.sendMsg(self.head.mainchannel.name, "Added [%s] %s »%s« via query" % (len(self.factoids), t[2], list2string(t[3:])) )
+                                self.head.sendMsg(self.head.mainchannel.name, "Added [%s] %s »%s« via non-op" % ((len(self.factoids)-1), t[2], list2string(t[3:])) )
 
                         except:
                             self.head.sendMsg(target,"Invalid Regex, "+ nick(host)+" :<")
@@ -94,7 +94,7 @@ class FactoidMod(IRCBotMod):
                     gets = list2string ( [ "[%s] %s -> %s" % (i, cre.pattern, subst) for i, (cre, subst) in enumerate(self.factoids) ] )
                     self.head.sendMsg(target, gets)
                     
-                elif (t[1] == "del") and (self.head.mainchannel.isOp(nick(host))) and (int(t[2]) <= len(self.factoids)) :
+                elif ((t[1] == "del") or (t[1] == "rem")) and (self.head.mainchannel.isOp(nick(host))) and (int(t[2]) <= len(self.factoids)) :
                     del(self.factoids[int(t[2])])
                     self.head.sendMsg(target, "Done.")
 
@@ -104,11 +104,6 @@ class FactoidMod(IRCBotMod):
                 if m:
                     tmp = cre.sub(subst, m.group(0))
                     matches.append( tmp )
-                    #print "----DEBUG"
-                    #print "text: " + text
-                    #print "subst: " + subst
-                    #print "added match: " + tmp
-                    #print "----DEBUG"
     
 
             if (len(matches) > 0): # and (len(t[1:]) > 15) and (len(t) > 3):
