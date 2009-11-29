@@ -108,6 +108,7 @@ class FactoidMod(IRCBotMod):
 
             if (len(matches) > 0): # and (len(t[1:]) > 15) and (len(t) > 3):
                 rply = matches[randint(0,len(matches)-1)].replace("$who", nick(host)) # choose random factoid, regard replacement of $who
+                rply = rply.replace("$someone",random.choice(bot.mainchannel.nicklist.keys())) # replace $someone with ..someone ;)
                 rply = rply.replace("\n","\\n") # output validation :)
                 if rply.startswith("A:"): # reactions starting with "A:" will be send as /me
                      self.head.sendAction(target, rply[2:]) # strip first two chars
